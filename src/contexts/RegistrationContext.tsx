@@ -34,8 +34,8 @@ export interface OrgDetails {
 
 export interface ExperienceDetails {
   experience_years: string;
-  specialization: string;
-  license_number: string;
+  primary_service_areas: string;
+  incorporation_number: string;
 }
 
 interface RegistrationState {
@@ -63,7 +63,7 @@ const emptyOrg: OrgDetails = {
 };
 
 const emptyExperience: ExperienceDetails = {
-  experience_years: '', specialization: '', license_number: '',
+  experience_years: '', primary_service_areas: '', incorporation_number: '',
 };
 
 const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);

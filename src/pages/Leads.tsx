@@ -45,7 +45,7 @@ export default function Leads() {
     fetchList(
       'DigiVault Lead',
       ['name', 'lead_name', 'status', 'modified'],
-      [['assigned_to', '=', user_id]],
+      [['assigned_to', '=', dp_id]],
       100,
       'modified desc'
     )

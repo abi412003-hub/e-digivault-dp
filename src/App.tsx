@@ -10,6 +10,7 @@ import RegisterPersonal from './pages/RegisterPersonal';
 import RegisterOrg from './pages/RegisterOrg';
 import RegisterExperience from './pages/RegisterExperience';
 import Pending from './pages/Pending';
+import Dashboard from './pages/Dashboard';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

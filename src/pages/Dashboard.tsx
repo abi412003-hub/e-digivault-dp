@@ -108,6 +108,7 @@ function formatDate(d: string) {
 /* ── Dashboard ── */
 export default function Dashboard() {
   const { profile_photo, dp_id } = useDPAuth();
+  const navigate = useNavigate();
   const photoUrl = getFileUrl(profile_photo ?? '');
 
   const [docCounts, setDocCounts] = useState({ completed: 0, pending: 0, rejected: 0, total: 0 });

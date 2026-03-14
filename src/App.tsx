@@ -4,6 +4,7 @@ import { DPAuthProvider } from './contexts/DPAuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import Login from './pages/Login';
+import RegisterType from './pages/RegisterType';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

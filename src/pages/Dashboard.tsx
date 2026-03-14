@@ -168,6 +168,9 @@ export default function Dashboard() {
       <header className="sticky top-0 z-20 bg-background border-b border-border h-14 flex items-center justify-between px-4">
         <h1 className="text-[20px] font-bold text-foreground">Dashboard</h1>
         <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/task-map')} className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-muted-foreground" />
+          </button>
           <button className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
             <MessageSquare className="w-5 h-5 text-muted-foreground" />
           </button>

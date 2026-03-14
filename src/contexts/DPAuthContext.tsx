@@ -61,6 +61,7 @@ export const DPAuthProvider = ({ children }: { children: React.ReactNode }) => {
               status: user.status,
               profile_photo: user.profile_photo,
               registration_type: user.registration_type,
+              user_role: user.user_role || null,
               supabaseUserId: session.user.id,
             };
             setState(newState);

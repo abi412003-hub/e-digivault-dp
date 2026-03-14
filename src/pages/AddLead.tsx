@@ -20,7 +20,7 @@ export default function AddLead() {
   const [photo, setPhoto] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Organization fields
+  // Organization fields (maps to org_* fields on DigiVault Lead)
   const [orgName, setOrgName] = useState('');
   const [regAddress, setRegAddress] = useState('');
   const [dateEstablished, setDateEstablished] = useState('');
@@ -28,18 +28,15 @@ export default function AddLead() {
   const [ownerName, setOwnerName] = useState('');
   const [ownershipStatus, setOwnershipStatus] = useState('');
 
-  // Personal fields
+  // Personal fields (maps to personal_* fields on DigiVault Lead)
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [dob, setDob] = useState('');
-  const [aadhar, setAadhar] = useState('');
-  const [pan, setPan] = useState('');
   const [address, setAddress] = useState('');
 
   // Service fields
   const [serviceType, setServiceType] = useState('');
-  const [propertyLocation, setPropertyLocation] = useState('');
   const [notes, setNotes] = useState('');
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,26 +50,61 @@ export default function AddLead() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    const today = new Date().toISOString().split('T')[0];
+
     try {
-      const body: any = {
-        lead_type: leadType,
-        assigned_to: dp_id,
-        status: 'Pending',
+      // DigiVault Lead required fields: lead_name*, lead_status*, created_date*, phone_no*, lead_type*
+      const base = {
+        lead_status: 'Pending',
+        created_date: today,
+        created_by: dp_id,
       };
+
+      let body: any = {};
+
       if (leadType === 'Organization') {
-        if (!orgName.trim()) { toast({ title: 'Organisation Name is required', variant: 'destructive' }); return; }
-        Object.assign(body, { organisation_name: orgName, registered_address: regAddress, date_of_establishment: dateEstablished, organisation_type: orgType, owner_name: ownerName, ownership_status: ownershipStatus });
+        if (!orgName.trim()) { toast({ title: 'Organisation Name is required', variant: 'destructive' }); setSubmitting(false); return; }
+        body = {
+          ...base,
+          lead_name: orgName,
+          lead_type: 'Organization',
+          phone_no: '0000000000', // required field — use placeholder if no phone given
+          org_name: orgName,
+          org_address: regAddress,
+          org_establishment_date: dateEstablished || undefined,
+          org_type: orgType,
+          org_owner_name: ownerName,
+          org_ownership_status: ownershipStatus,
+        };
       } else if (leadType === 'Personal') {
-        if (!fullName.trim()) { toast({ title: 'Full Name is required', variant: 'destructive' }); return; }
-        Object.assign(body, { lead_name: fullName, phone, email, date_of_birth: dob, aadhar_number: aadhar, pan_number: pan, address });
+        if (!fullName.trim()) { toast({ title: 'Full Name is required', variant: 'destructive' }); setSubmitting(false); return; }
+        if (!phone.trim() || phone.length < 10) { toast({ title: 'Valid phone number required', variant: 'destructive' }); setSubmitting(false); return; }
+        body = {
+          ...base,
+          lead_name: fullName,
+          lead_type: 'Personal',
+          phone_no: phone,
+          email: email || undefined,
+          personal_full_name: fullName,
+          personal_email: email || undefined,
+          personal_phone: phone,
+        };
       } else {
-        Object.assign(body, { service_type: serviceType, property_location: propertyLocation, notes });
+        body = {
+          ...base,
+          lead_name: `Service Lead — ${serviceType || 'General'}`,
+          lead_type: 'Service',
+          phone_no: '0000000000',
+          service_type: serviceType || undefined,
+          service_description: notes || undefined,
+        };
       }
+
       await createRecord('DigiVault Lead', body);
       toast({ title: 'Lead added successfully' });
       navigate('/leads');
-    } catch {
-      toast({ title: 'Failed to add lead', variant: 'destructive' });
+    } catch (e: any) {
+      toast({ title: 'Failed to add lead', description: e?.message || 'Please try again', variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -116,8 +148,8 @@ export default function AddLead() {
         {/* Lead type radio */}
         <div className="flex justify-center gap-6 mb-5">
           {(['Personal', 'Organization', 'Service'] as LeadType[]).map((t) => (
-            <label key={t} className="flex items-center gap-2 cursor-pointer">
-              <div onClick={() => setLeadType(t)} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${leadType === t ? 'border-blue-600' : 'border-gray-300'}`}>
+            <label key={t} className="flex items-center gap-2 cursor-pointer" onClick={() => setLeadType(t)}>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${leadType === t ? 'border-blue-600' : 'border-gray-300'}`}>
                 {leadType === t && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
               </div>
               <span className={`text-[14px] font-medium ${leadType === t ? 'text-foreground' : 'text-muted-foreground'}`}>{t}</span>
@@ -137,7 +169,7 @@ export default function AddLead() {
         {leadType === 'Organization' && (
           <div className="space-y-5">
             {[
-              { label: 'Organisation Name', val: orgName, set: setOrgName, placeholder: 'Citrine Solutions Pvt. Ltd' },
+              { label: 'Organisation Name *', val: orgName, set: setOrgName, placeholder: 'Citrine Solutions Pvt. Ltd' },
               { label: 'Type of Organisation', val: orgType, set: setOrgType, placeholder: 'Private Limited Company' },
               { label: 'Name of the Owner', val: ownerName, set: setOwnerName, placeholder: 'Rajesh Kumar' },
               { label: 'Ownership Status', val: ownershipStatus, set: setOwnershipStatus, placeholder: 'Individual Business' },
@@ -149,7 +181,7 @@ export default function AddLead() {
             ))}
             <div className="space-y-1">
               <label className="text-[14px] font-medium text-foreground">Registered Office Address</label>
-              <Textarea rows={2} className="rounded-md border border-input bg-transparent text-base px-3 py-2 resize-none" placeholder="34, TechPark Lane, Koramangala, Bangalore, Karnataka - 560034" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} />
+              <Textarea rows={2} className="rounded-md border border-input bg-transparent text-base px-3 py-2 resize-none" placeholder="34, TechPark Lane, Koramangala, Bangalore" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} />
             </div>
             <div className="space-y-1">
               <label className="text-[14px] font-medium text-foreground">Date of Establishment</label>
@@ -162,15 +194,13 @@ export default function AddLead() {
         {leadType === 'Personal' && (
           <div className="space-y-5">
             {[
-              { label: 'Full Name', val: fullName, set: setFullName, placeholder: 'Rajesh Kumar' },
-              { label: 'Phone Number', val: phone, set: setPhone, placeholder: '9876543210', type: 'tel' },
+              { label: 'Full Name *', val: fullName, set: setFullName, placeholder: 'Rajesh Kumar', type: 'text' },
+              { label: 'Phone Number *', val: phone, set: setPhone, placeholder: '9876543210', type: 'tel' },
               { label: 'Email Address', val: email, set: setEmail, placeholder: 'rajesh@gmail.com', type: 'email' },
-              { label: 'Aadhaar Number', val: aadhar, set: setAadhar, placeholder: '9400 8123 3432' },
-              { label: 'PAN Number', val: pan, set: (v: string) => setPan(v.toUpperCase()), placeholder: 'ABCDE1234F' },
             ].map(({ label, val, set, placeholder, type }) => (
               <div key={label} className="space-y-1">
                 <label className="text-[14px] font-medium text-foreground">{label}</label>
-                <Input className={underlineClass} placeholder={placeholder} value={val} onChange={(e) => set(e.target.value)} type={type ?? 'text'} />
+                <Input className={underlineClass} placeholder={placeholder} value={val} onChange={(e) => set(e.target.value)} type={type} />
               </div>
             ))}
             <div className="space-y-1">
@@ -187,31 +217,24 @@ export default function AddLead() {
         {/* Service form */}
         {leadType === 'Service' && (
           <div className="space-y-5">
-            {[
-              { label: 'Service Type', val: serviceType, set: setServiceType, placeholder: 'E-Khatha' },
-              { label: 'Property Location', val: propertyLocation, set: setPropertyLocation, placeholder: 'Koramangala, Bengaluru' },
-            ].map(({ label, val, set, placeholder }) => (
-              <div key={label} className="space-y-1">
-                <label className="text-[14px] font-medium text-foreground">{label}</label>
-                <Input className={underlineClass} placeholder={placeholder} value={val} onChange={(e) => set(e.target.value)} />
-              </div>
-            ))}
+            <div className="space-y-1">
+              <label className="text-[14px] font-medium text-foreground">Service Type</label>
+              <Input className={underlineClass} placeholder="E-Khatha" value={serviceType} onChange={(e) => setServiceType(e.target.value)} />
+            </div>
             <div className="space-y-1">
               <label className="text-[14px] font-medium text-foreground">Client Notes</label>
-              <Textarea rows={3} className="rounded-md border border-input bg-transparent text-base px-3 py-2 resize-none" placeholder="Any notes about the client or service requirement..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Textarea rows={3} className="rounded-md border border-input bg-transparent text-base px-3 py-2 resize-none" placeholder="Any notes about this service requirement..." value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
           </div>
         )}
 
-        {/* Buttons */}
         <div className="flex gap-3 mt-8">
-          <Button onClick={() => navigate('/leads')} className="flex-1 bg-blue-700 hover:bg-blue-800 text-white rounded-xl h-13 text-[16px] font-bold">Skip</Button>
+          <Button onClick={() => navigate('/leads')} variant="outline" className="flex-1 rounded-xl h-13 text-[16px] font-bold border-[#1A3C8E] text-[#1A3C8E]">Skip</Button>
           <Button onClick={handleSubmit} disabled={submitting} className="flex-1 bg-blue-700 hover:bg-blue-800 text-white rounded-xl h-13 text-[16px] font-bold">
             {submitting ? 'Adding...' : 'Next'}
           </Button>
         </div>
       </div>
-
       <BottomNav />
     </div>
   );

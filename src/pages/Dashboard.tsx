@@ -114,6 +114,7 @@ export default function Dashboard() {
   const [docCounts, setDocCounts] = useState({ completed: 0, pending: 0, rejected: 0, total: 0 });
   const [srCounts, setSrCounts] = useState({ verified: 0, pending: 0, rejected: 0, total: 0 });
   const [recentDocs, setRecentDocs] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     // Fetch client documents
@@ -162,6 +163,19 @@ export default function Dashboard() {
       .catch(() => {});
   }, []);
 
+  // Unread messages polling
+  useEffect(() => {
+    if (!dp_id) return;
+    const checkUnread = () => {
+      fetchList('DigiVault Message', ['name', 'sender_id'], [['sender_id', '!=', dp_id]], 50, 'creation desc')
+        .then((msgs: any[]) => { if (msgs) setUnreadCount(msgs.length); })
+        .catch(() => {});
+    };
+    checkUnread();
+    const interval = setInterval(checkUnread, 10000);
+    return () => clearInterval(interval);
+  }, [dp_id]);
+
   return (
     <div className="min-h-svh bg-background pb-20">
       {/* Header */}
@@ -171,8 +185,13 @@ export default function Dashboard() {
           <button onClick={() => navigate('/task-map')} className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
             <MapPin className="w-5 h-5 text-muted-foreground" />
           </button>
-          <button className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
+          <button onClick={() => navigate('/messages')} className="w-9 h-9 border border-border rounded-lg flex items-center justify-center relative">
             <MessageSquare className="w-5 h-5 text-muted-foreground" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
           <button className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
             <Home className="w-5 h-5 text-muted-foreground" />

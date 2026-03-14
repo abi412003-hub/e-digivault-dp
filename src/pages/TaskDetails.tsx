@@ -153,7 +153,7 @@ export default function TaskDetails() {
           <h1 className="text-[18px] font-bold text-foreground">Task&nbsp; Details</h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"><MessageSquare className="w-5 h-5 text-muted-foreground" /></div>
+          <button onClick={() => navigate(`/messages/${taskId}`)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"><MessageSquare className="w-5 h-5 text-primary" /></button>
           <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"><Bell className="w-5 h-5 text-muted-foreground" /></div>
           <div className="w-9 h-9 rounded-full border border-border overflow-hidden flex items-center justify-center bg-muted">
             {avatarUrl ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" /> : <User className="w-5 h-5 text-muted-foreground" />}

@@ -25,6 +25,8 @@ import FundRequest from './pages/FundRequest';
 import Settings from './pages/Settings';
 import TaskMap from './pages/TaskMap';
 import ScanDocument from './pages/ScanDocument';
+import MessageList from './pages/MessageList';
+import MessageThread from './pages/MessageThread';
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,8 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/task-map" element={<TaskMap />} />
               <Route path="/scan" element={<ScanDocument />} />
+              <Route path="/messages" element={<MessageList />} />
+              <Route path="/messages/:taskId" element={<MessageThread />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

@@ -131,7 +131,7 @@ export default function Dashboard() {
       .catch(() => {});
 
     // Fetch service requests
-    fetchList('DigiVault Service Request', ['name', 'status'], [])
+    fetchList('DigiVault Service Request', ['name', 'request_status'], [])
       .then((srs: any[]) => {
         if (!srs) return;
         let verified = 0, pending = 0, rejected = 0;

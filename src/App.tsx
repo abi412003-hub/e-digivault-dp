@@ -19,7 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register-type" element={<Placeholder />} />
+            <Route path="/register-type" element={<RegisterType />} />
             <Route path="/register-personal" element={<Placeholder />} />
             <Route path="/register-org" element={<Placeholder />} />
             <Route path="/register-experience" element={<Placeholder />} />

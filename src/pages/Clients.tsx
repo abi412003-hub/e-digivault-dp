@@ -11,7 +11,7 @@ function ClientCard({ client, onClick }: { client: any; onClick: () => void }) {
   const isActive = status.toLowerCase() === 'active';
 
   return (
-    <div className="bg-background rounded-xl border border-border p-4 flex items-center gap-4">
+    <div onClick={onClick} className="bg-background rounded-xl border border-border p-4 flex items-center gap-4 cursor-pointer active:bg-muted/30 transition-colors">
       {/* Photo */}
       <div className="w-20 h-20 rounded-full border-2 border-muted overflow-hidden shrink-0 flex items-center justify-center bg-muted">
         {photoUrl ? (

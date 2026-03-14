@@ -27,6 +27,7 @@ import TaskMap from './pages/TaskMap';
 import ScanDocument from './pages/ScanDocument';
 import MessageList from './pages/MessageList';
 import MessageThread from './pages/MessageThread';
+import ServiceTracker from './pages/ServiceTracker';
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ function App() {
               <Route path="/scan" element={<ScanDocument />} />
               <Route path="/messages" element={<MessageList />} />
               <Route path="/messages/:taskId" element={<MessageThread />} />
+              <Route path="/service-request/:id/track" element={<ServiceTracker />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

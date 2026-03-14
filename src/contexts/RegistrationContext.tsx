@@ -34,8 +34,8 @@ export interface OrgDetails {
 
 export interface ExperienceDetails {
   experience_years: string;
-  specialization: string;
-  license_number: string;
+  primary_service_areas: string;
+  incorporation_number: string;
 }
 
 interface RegistrationState {

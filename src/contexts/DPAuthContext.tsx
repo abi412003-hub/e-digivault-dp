@@ -9,6 +9,7 @@ interface DPAuthState {
   status: string | null;
   profile_photo: string | null;
   registration_type: string | null;
+  user_role: string | null;
   supabaseUserId: string | null;
 }
 
@@ -28,6 +29,7 @@ const emptyState: DPAuthState = {
   status: null,
   profile_photo: null,
   registration_type: null,
+  user_role: null,
   supabaseUserId: null,
 };
 
@@ -59,6 +61,7 @@ export const DPAuthProvider = ({ children }: { children: React.ReactNode }) => {
               status: user.status,
               profile_photo: user.profile_photo,
               registration_type: user.registration_type,
+              user_role: user.user_role || null,
               supabaseUserId: session.user.id,
             };
             setState(newState);

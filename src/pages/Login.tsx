@@ -82,6 +82,7 @@ function useOtpFlow(onVerified: (result: VerifyResult) => void) {
           status: user.status,
           profile_photo: user.profile_photo,
           registration_type: user.registration_type,
+          user_role: user.user_role || null,
           supabaseUserId: data.user?.id ?? null,
         };
         login(authData);

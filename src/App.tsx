@@ -18,8 +18,11 @@ import TaskDetails from './pages/TaskDetails';
 import EstimateList from './pages/EstimateList';
 import EstimateBuilder from './pages/EstimateBuilder';
 import Leads from './pages/Leads';
+import LeadStatus from './pages/LeadStatus';
+import AddLead from './pages/AddLead';
 import Transactions from './pages/Transactions';
-import Placeholder from './pages/Placeholder';
+import FundRequest from './pages/FundRequest';
+import Settings from './pages/Settings';
 
 const queryClient = new QueryClient();
 
@@ -47,8 +50,11 @@ function App() {
               <Route path="/estimate-list" element={<EstimateList />} />
               <Route path="/estimate-builder" element={<EstimateBuilder />} />
               <Route path="/leads" element={<Leads />} />
+              <Route path="/leads-report" element={<LeadStatus />} />
+              <Route path="/add-lead" element={<AddLead />} />
               <Route path="/transactions" element={<Transactions />} />
-              <Route path="/settings" element={<Placeholder />} />
+              <Route path="/fund-request" element={<FundRequest />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

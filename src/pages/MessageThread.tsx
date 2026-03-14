@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDPAuth } from '@/contexts/DPAuthContext';
-import { fetchList, fetchOne, createRecord, getFileUrl } from '@/lib/api';
-import { ArrowLeft, Send, Camera, X, Image as ImageIcon } from 'lucide-react';
+import { fetchList, fetchOne, createRecord, updateRecord, getFileUrl } from '@/lib/api';
+import { ArrowLeft, Send, Camera, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Message {
@@ -12,6 +12,7 @@ interface Message {
   sender_role: string;
   sender_id: string;
   attachment: string;
+  is_read: number;
   creation: string;
 }
 
@@ -19,22 +20,36 @@ function roleBadgeClass(role: string) {
   const r = (role ?? '').toLowerCase();
   if (r.includes('delivery') || r.includes('dp')) return 'bg-orange-100 text-orange-700';
   if (r.includes('client') || r.includes('customer')) return 'bg-purple-100 text-purple-700';
+  if (r.includes('bd') || r.includes('business')) return 'bg-teal-100 text-teal-700';
   if (r.includes('system')) return 'bg-muted text-muted-foreground';
-  return 'bg-blue-100 text-blue-700'; // BD / admin
+  return 'bg-blue-100 text-blue-700';
 }
 
-function bubbleClass(role: string, dpId: string, senderId: string) {
-  if (senderId === dpId) return 'bg-[#FAECE7] text-foreground ml-auto';
+function roleBadgeLabel(role: string) {
+  const r = (role ?? '').toLowerCase();
+  if (r.includes('delivery') || r.includes('dp')) return 'DP';
+  if (r.includes('client') || r.includes('customer')) return 'Client';
+  if (r.includes('bd') || r.includes('business')) return 'BD';
+  return role;
+}
+
+function bubbleClass(role: string, isSelf: boolean) {
+  if (isSelf) {
+    // BD = teal, DP = coral
+    const r = (role ?? '').toLowerCase();
+    if (r.includes('bd') || r.includes('business')) return 'bg-[#E1F5EE] text-foreground ml-auto';
+    return 'bg-[#FAECE7] text-foreground ml-auto';
+  }
   const r = (role ?? '').toLowerCase();
   if (r.includes('client') || r.includes('customer')) return 'bg-[#EEEDFE] text-foreground mr-auto';
+  if (r.includes('delivery') || r.includes('dp')) return 'bg-[#FAECE7] text-foreground mr-auto';
   if (r.includes('system')) return 'bg-muted text-muted-foreground mx-auto text-center';
-  return 'bg-muted text-foreground mr-auto'; // BD
+  return 'bg-muted text-foreground mr-auto';
 }
 
 function formatTime(d: string) {
   if (!d) return '';
-  const dt = new Date(d);
-  return dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
 function formatDateHeader(d: string) {
@@ -49,14 +64,17 @@ function formatDateHeader(d: string) {
 
 export default function MessageThread() {
   const navigate = useNavigate();
-  const { taskId } = useParams<{ taskId: string }>();
-  const { dp_id, dp_name } = useDPAuth();
+  const { taskId } = useParams<{ taskId: string }>(); // generic param — taskId for DP, serviceRequestId for BD
+  const { dp_id, dp_name, user_role } = useDPAuth();
+  const isBD = (user_role ?? '').toLowerCase().includes('business') || (user_role ?? '').toLowerCase() === 'bd';
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [taskInfo, setTaskInfo] = useState<any>(null);
   const [serviceRequest, setServiceRequest] = useState('');
   const [clientName, setClientName] = useState('');
+  const [clientId, setClientId] = useState('');
+  const [headerTitle, setHeaderTitle] = useState('Messages');
+  const [participantRoles, setParticipantRoles] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [fullscreenImg, setFullscreenImg] = useState('');
@@ -64,24 +82,43 @@ export default function MessageThread() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load task context
+  // Resolve context based on role
   useEffect(() => {
     if (!taskId) return;
-    fetchOne('DigiVault Task', taskId)
-      .then((t) => {
-        if (!t) return;
-        setTaskInfo(t);
-        const sr = t.service || '';
-        setServiceRequest(sr);
 
-        if (t.client) {
-          fetchOne('DigiVault Client', t.client)
-            .then((c) => { if (c?.client_name) setClientName(c.client_name); })
-            .catch(() => {});
-        }
-      })
-      .catch(() => {});
-  }, [taskId]);
+    if (isBD) {
+      // taskId param IS the serviceRequestId for BD
+      setServiceRequest(taskId);
+      setHeaderTitle(taskId);
+      // Fetch service request to get client
+      fetchOne('DigiVault Service Request', taskId)
+        .then((sr) => {
+          if (sr?.client) {
+            setClientId(sr.client);
+            fetchOne('DigiVault Client', sr.client)
+              .then((c) => { if (c?.client_name) setClientName(c.client_name); })
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    } else {
+      // DP: taskId is actual task ID
+      fetchOne('DigiVault Task', taskId)
+        .then((t) => {
+          if (!t) return;
+          const sr = t.service || '';
+          setServiceRequest(sr);
+          setHeaderTitle(t.task_name || t.name);
+          setClientId(t.client || '');
+          if (t.client) {
+            fetchOne('DigiVault Client', t.client)
+              .then((c) => { if (c?.client_name) setClientName(c.client_name); })
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
+  }, [taskId, isBD]);
 
   // Fetch messages
   const loadMessages = useCallback(async () => {
@@ -89,26 +126,55 @@ export default function MessageThread() {
     try {
       const msgs = await fetchList(
         'DigiVault Message',
-        ['name', 'message_text', 'sender_name', 'sender_role', 'sender_id', 'attachment', 'creation'],
+        ['name', 'message_text', 'sender_name', 'sender_role', 'sender_id', 'attachment', 'is_read', 'creation'],
         [['service_request', '=', serviceRequest]],
         100,
         'creation asc'
       );
-      if (msgs) setMessages(msgs);
+      if (msgs) {
+        setMessages(msgs);
+        // Extract unique participant roles
+        const roles = [...new Set(msgs.map((m: any) => m.sender_role).filter(Boolean))];
+        setParticipantRoles(roles as string[]);
+      }
     } catch {}
     setLoading(false);
   }, [serviceRequest]);
 
   useEffect(() => { loadMessages(); }, [loadMessages]);
-
-  // Poll every 10s
   useEffect(() => {
     if (!serviceRequest) return;
     const interval = setInterval(loadMessages, 10000);
     return () => clearInterval(interval);
   }, [serviceRequest, loadMessages]);
 
-  // Scroll to bottom on new messages
+  // Mark as read on open (BD marks non-BD messages, DP marks non-DP messages)
+  useEffect(() => {
+    if (!serviceRequest || !dp_id) return;
+    const markRead = async () => {
+      try {
+        const myRole = isBD ? 'BD' : 'Delivery Partner';
+        // Fetch unread messages from others
+        const unreadMsgs = await fetchList(
+          'DigiVault Message',
+          ['name', 'sender_role', 'is_read'],
+          [['service_request', '=', serviceRequest], ['is_read', '=', 0], ['sender_id', '!=', dp_id]],
+          50
+        );
+        if (unreadMsgs && unreadMsgs.length > 0) {
+          for (const m of unreadMsgs) {
+            try {
+              await updateRecord('DigiVault Message', m.name, { is_read: 1 });
+            } catch {}
+          }
+        }
+      } catch {}
+    };
+    const timeout = setTimeout(markRead, 1000); // Delay slightly
+    return () => clearTimeout(timeout);
+  }, [serviceRequest, dp_id, isBD]);
+
+  // Scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -120,9 +186,9 @@ export default function MessageThread() {
     try {
       await createRecord('DigiVault Message', {
         service_request: serviceRequest,
-        client: taskInfo?.client || '',
-        sender_role: 'Delivery Partner',
-        sender_name: dp_name || 'DP',
+        client: clientId,
+        sender_role: isBD ? 'BD' : 'Delivery Partner',
+        sender_name: dp_name || (isBD ? 'BD' : 'DP'),
         sender_id: dp_id,
         message_text: trimmed,
       });
@@ -139,14 +205,12 @@ export default function MessageThread() {
     const file = e.target.files?.[0];
     if (!file || !serviceRequest) return;
     setSending(true);
-
     try {
       const reader = new FileReader();
       const base64: string = await new Promise((resolve) => {
         reader.onload = (ev) => resolve((ev.target?.result as string).split(',')[1]);
         reader.readAsDataURL(file);
       });
-
       const BASE_URL = 'https://xorgsduvbpaokegawhbd.supabase.co/functions/v1/erpnext-proxy';
       const uploadRes = await fetch(BASE_URL + '?path=' + encodeURIComponent('/api/method/upload_file'), {
         method: 'POST',
@@ -158,14 +222,13 @@ export default function MessageThread() {
 
       await createRecord('DigiVault Message', {
         service_request: serviceRequest,
-        client: taskInfo?.client || '',
-        sender_role: 'Delivery Partner',
-        sender_name: dp_name || 'DP',
+        client: clientId,
+        sender_role: isBD ? 'BD' : 'Delivery Partner',
+        sender_name: dp_name || (isBD ? 'BD' : 'DP'),
         sender_id: dp_id,
         message_text: '',
         attachment: fileUrl,
       });
-
       await loadMessages();
     } catch {
       toast({ title: 'Failed to send attachment', variant: 'destructive' });
@@ -187,6 +250,14 @@ export default function MessageThread() {
     }
   });
 
+  const participantBadge = (role: string) => {
+    const r = (role ?? '').toLowerCase();
+    if (r.includes('client') || r.includes('customer')) return { cls: 'bg-purple-100 text-purple-700 border-purple-200', label: 'Client' };
+    if (r.includes('delivery') || r.includes('dp')) return { cls: 'bg-orange-100 text-orange-700 border-orange-200', label: 'DP' };
+    if (r.includes('bd') || r.includes('business')) return { cls: 'bg-teal-100 text-teal-700 border-teal-200', label: 'BD' };
+    return { cls: 'bg-muted text-muted-foreground border-border', label: role };
+  };
+
   return (
     <div className="min-h-svh bg-background flex flex-col">
       {/* Header */}
@@ -197,13 +268,27 @@ export default function MessageThread() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-[16px] font-bold text-foreground truncate">
-              {taskInfo?.task_name || 'Messages'}
+              {clientName || headerTitle}
             </h1>
             <p className="text-[12px] text-muted-foreground truncate">
-              {clientName || taskInfo?.client || ''}
+              {serviceRequest}
             </p>
           </div>
         </div>
+
+        {/* Participant badges (BD view) */}
+        {isBD && participantRoles.length > 0 && (
+          <div className="flex gap-1.5 mt-2">
+            {participantRoles.map((role) => {
+              const badge = participantBadge(role);
+              return (
+                <span key={role} className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${badge.cls}`}>
+                  {badge.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </header>
 
       {/* Messages */}
@@ -220,7 +305,6 @@ export default function MessageThread() {
         ) : (
           groupedMessages.map((group) => (
             <div key={group.date}>
-              {/* Date header */}
               <div className="flex justify-center my-3">
                 <span className="bg-muted text-muted-foreground text-[11px] px-3 py-1 rounded-full">
                   {formatDateHeader(group.date)}
@@ -229,7 +313,7 @@ export default function MessageThread() {
 
               {group.msgs.map((m) => {
                 const isSystem = (m.sender_role ?? '').toLowerCase().includes('system');
-                const isDP = m.sender_id === dp_id;
+                const isSelf = m.sender_id === dp_id;
 
                 if (isSystem) {
                   return (
@@ -242,33 +326,25 @@ export default function MessageThread() {
                 }
 
                 return (
-                  <div key={m.name} className={`flex ${isDP ? 'justify-end' : 'justify-start'} mb-2`}>
-                    <div className={`rounded-2xl px-3.5 py-2.5 max-w-[78%] ${bubbleClass(m.sender_role, dp_id || '', m.sender_id)}`}>
-                      {/* Sender info */}
+                  <div key={m.name} className={`flex ${isSelf ? 'justify-end' : 'justify-start'} mb-2`}>
+                    <div className={`rounded-2xl px-3.5 py-2.5 max-w-[78%] ${bubbleClass(m.sender_role, isSelf)}`}>
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="text-[11px] font-semibold">{m.sender_name}</span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${roleBadgeClass(m.sender_role)}`}>
-                          {m.sender_role}
+                          {roleBadgeLabel(m.sender_role)}
                         </span>
                       </div>
 
-                      {/* Attachment */}
                       {m.attachment && (
                         <button onClick={() => setFullscreenImg(getFileUrl(m.attachment))} className="mb-1.5 block">
-                          <img
-                            src={getFileUrl(m.attachment)}
-                            alt="Attachment"
-                            className="rounded-lg max-h-40 object-cover border border-border"
-                          />
+                          <img src={getFileUrl(m.attachment)} alt="Attachment" className="rounded-lg max-h-40 object-cover border border-border" />
                         </button>
                       )}
 
-                      {/* Text */}
                       {m.message_text && (
                         <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{m.message_text}</p>
                       )}
 
-                      {/* Time */}
                       <p className="text-[10px] text-muted-foreground mt-1 text-right">{formatTime(m.creation)}</p>
                     </div>
                   </div>
@@ -282,20 +358,10 @@ export default function MessageThread() {
 
       {/* Input bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border px-3 py-2.5 z-30 flex items-center gap-2">
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0"
-        >
+        <button onClick={() => fileInputRef.current?.click()} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
           <Camera className="w-5 h-5 text-muted-foreground" />
         </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={handleAttachment}
-        />
+        <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleAttachment} />
         <input
           type="text"
           value={text}

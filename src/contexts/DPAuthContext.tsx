@@ -16,6 +16,7 @@ interface DPAuthContextType extends DPAuthState {
   isLoggedIn: boolean;
   isLoading: boolean;
   setPhone: (phone: string) => void;
+  setRegistrationType: (type: string) => void;
   login: (data: DPAuthState) => void;
   logout: () => void;
 }

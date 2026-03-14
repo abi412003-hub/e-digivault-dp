@@ -7,6 +7,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import Login from './pages/Login';
 import RegisterType from './pages/RegisterType';
 import RegisterPersonal from './pages/RegisterPersonal';
+import RegisterOrg from './pages/RegisterOrg';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

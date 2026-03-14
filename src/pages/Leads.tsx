@@ -41,7 +41,7 @@ export default function Leads() {
   const [counts, setCounts] = useState({ verified: 0, rejected: 0, pending: 0 });
 
   useEffect(() => {
-    if (!user_id) return;
+    if (!dp_id) return;
     fetchList(
       'DigiVault Lead',
       ['name', 'lead_name', 'status', 'modified'],

@@ -13,6 +13,7 @@ import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import ClientDetail from './pages/ClientDetail';
+import Properties from './pages/Properties';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/clients" element={<Clients />} />
               <Route path="/client-detail" element={<ClientDetail />} />
+              <Route path="/properties" element={<Properties />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />

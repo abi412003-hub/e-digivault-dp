@@ -115,6 +115,7 @@ export default function Dashboard() {
   const [srCounts, setSrCounts] = useState({ verified: 0, pending: 0, rejected: 0, total: 0 });
   const [recentDocs, setRecentDocs] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
 
   useEffect(() => {
     // Fetch client documents

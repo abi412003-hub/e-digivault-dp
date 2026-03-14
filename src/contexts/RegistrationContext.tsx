@@ -57,8 +57,9 @@ const emptyPersonal: PersonalDetails = {
 };
 
 const emptyOrg: OrgDetails = {
-  org_name: '', org_type: '', org_address: '', org_state: 'Karnataka',
-  org_district: '', org_city: '', org_pincode: '', gst: '',
+  company_name: '', company_type: '', gstin_pan: '', business_reg_number: '',
+  nature_of_business: '', office_address: '', state: 'Karnataka', district: '',
+  taluk: '', city: '', pincode: '', website: '', num_employees: '', annual_revenue: '',
 };
 
 const emptyExperience: ExperienceDetails = {

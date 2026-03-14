@@ -240,7 +240,10 @@ export default function TaskDetails() {
         ) : (
           <div className="space-y-3">
             <div className="flex gap-3">
-              <button onClick={() => navigate(`/document-upload?task=${taskId}`)} className="flex-1 border border-[#3B82F6] text-[#3B82F6] rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5">
+              <button onClick={() => navigate(`/scan?task=${taskId}`)} className="flex-1 border border-primary text-primary rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5">
+                <ScanLine className="w-4 h-4" /> Scan
+              </button>
+              <button onClick={() => navigate(`/document-upload?task=${taskId}`)} className="flex-1 border border-primary text-primary rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5">
                 <Upload className="w-4 h-4" /> Upload
               </button>
               <button onClick={handleSendForApproval} disabled={!allStepsDone || sending} className="flex-1 bg-[#3B82F6] text-white rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5 disabled:opacity-50">

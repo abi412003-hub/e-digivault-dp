@@ -11,6 +11,7 @@ import RegisterOrg from './pages/RegisterOrg';
 import RegisterExperience from './pages/RegisterExperience';
 import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
+import Clients from './pages/Clients';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();
@@ -32,7 +33,7 @@ function App() {
               <Route path="/register-experience" element={<RegisterExperience />} />
               <Route path="/pending" element={<Pending />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/clients" element={<Placeholder />} />
+              <Route path="/clients" element={<Clients />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />

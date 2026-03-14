@@ -64,6 +64,7 @@ function App() {
               <Route path="/scan" element={<ScanDocument />} />
               <Route path="/messages" element={<MessageList />} />
               <Route path="/messages/:taskId" element={<MessageThread />} />
+              <Route path="/service-request/:id/track" element={<ServiceTracker />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

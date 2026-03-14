@@ -27,6 +27,7 @@ import TaskMap from './pages/TaskMap';
 import ScanDocument from './pages/ScanDocument';
 import MessageList from './pages/MessageList';
 import MessageThread from './pages/MessageThread';
+import ServiceTracker from './pages/ServiceTracker';
 
 const queryClient = new QueryClient();
 

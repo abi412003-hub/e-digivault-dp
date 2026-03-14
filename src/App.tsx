@@ -22,8 +22,6 @@ import LeadStatus from './pages/LeadStatus';
 import AddLead from './pages/AddLead';
 import Transactions from './pages/Transactions';
 import FundRequest from './pages/FundRequest';
-import ExpenditureLog from './pages/ExpenditureLog';
-import TransactionList from './pages/TransactionList';
 import Settings from './pages/Settings';
 
 const queryClient = new QueryClient();
@@ -55,8 +53,6 @@ function App() {
               <Route path="/leads-report" element={<LeadStatus />} />
               <Route path="/add-lead" element={<AddLead />} />
               <Route path="/transactions" element={<Transactions />} />
-              <Route path="/expenditure-log" element={<ExpenditureLog />} />
-              <Route path="/transaction-list" element={<TransactionList />} />
               <Route path="/fund-request" element={<FundRequest />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>

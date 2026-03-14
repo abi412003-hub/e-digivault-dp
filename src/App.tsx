@@ -4,6 +4,7 @@ import { DPAuthProvider } from './contexts/DPAuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import Login from './pages/Login';
+import RegisterType from './pages/RegisterType';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();
@@ -18,7 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register-type" element={<Placeholder />} />
+            <Route path="/register-type" element={<RegisterType />} />
             <Route path="/register-personal" element={<Placeholder />} />
             <Route path="/register-org" element={<Placeholder />} />
             <Route path="/register-experience" element={<Placeholder />} />

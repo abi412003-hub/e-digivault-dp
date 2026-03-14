@@ -9,6 +9,7 @@ interface DPAuthState {
   status: string | null;
   profile_photo: string | null;
   registration_type: string | null;
+  user_role: string | null;
   supabaseUserId: string | null;
 }
 

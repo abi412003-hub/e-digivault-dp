@@ -34,7 +34,7 @@ const STATUS_PILL: Record<string, { label: string; cls: string }> = {
 
 export default function Leads() {
   const navigate = useNavigate();
-  const { profile_photo, user_id } = useDPAuth();
+  const { profile_photo, dp_id } = useDPAuth();
   const avatarUrl = getFileUrl(profile_photo ?? '');
 
   const [leads, setLeads] = useState<Lead[]>([]);

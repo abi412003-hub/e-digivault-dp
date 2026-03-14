@@ -17,6 +17,7 @@ import Properties from './pages/Properties';
 import TaskDetails from './pages/TaskDetails';
 import EstimateList from './pages/EstimateList';
 import EstimateBuilder from './pages/EstimateBuilder';
+import Leads from './pages/Leads';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

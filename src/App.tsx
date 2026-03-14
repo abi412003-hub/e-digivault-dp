@@ -31,7 +31,7 @@ function App() {
               <Route path="/register-org" element={<RegisterOrg />} />
               <Route path="/register-experience" element={<RegisterExperience />} />
               <Route path="/pending" element={<Pending />} />
-              <Route path="/dashboard" element={<Placeholder />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/clients" element={<Placeholder />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />

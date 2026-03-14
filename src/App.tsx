@@ -27,7 +27,7 @@ function App() {
               <Route path="/register-type" element={<RegisterType />} />
               <Route path="/register-personal" element={<RegisterPersonal />} />
               <Route path="/register-org" element={<RegisterOrg />} />
-              <Route path="/register-experience" element={<Placeholder />} />
+              <Route path="/register-experience" element={<RegisterExperience />} />
               <Route path="/pending" element={<Placeholder />} />
               <Route path="/dashboard" element={<Placeholder />} />
               <Route path="/clients" element={<Placeholder />} />

@@ -29,6 +29,7 @@ const emptyState: DPAuthState = {
   status: null,
   profile_photo: null,
   registration_type: null,
+  user_role: null,
   supabaseUserId: null,
 };
 

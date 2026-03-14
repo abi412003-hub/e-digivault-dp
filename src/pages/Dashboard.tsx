@@ -136,7 +136,7 @@ export default function Dashboard() {
         if (!srs) return;
         let verified = 0, pending = 0, rejected = 0;
         srs.forEach((s) => {
-          const st = (s.status ?? '').toLowerCase();
+          const st = (s.request_status ?? '').toLowerCase();
           if (st === 'completed' || st === 'verified') verified++;
           else if (st === 'rejected') rejected++;
           else pending++;

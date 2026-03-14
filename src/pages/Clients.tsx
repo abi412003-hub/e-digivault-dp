@@ -5,7 +5,7 @@ import { fetchList, getFileUrl } from '@/lib/api';
 import { ArrowLeft, MessageSquare, Home, User, Search } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 
-function ClientCard({ client }: { client: any }) {
+function ClientCard({ client, onClick }: { client: any; onClick: () => void }) {
   const photoUrl = getFileUrl(client.client_photo ?? '');
   const status = client.client_status ?? 'Active';
   const isActive = status.toLowerCase() === 'active';

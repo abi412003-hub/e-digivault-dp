@@ -163,6 +163,19 @@ export default function Dashboard() {
       .catch(() => {});
   }, []);
 
+  // Unread messages polling
+  useEffect(() => {
+    if (!dp_id) return;
+    const checkUnread = () => {
+      fetchList('DigiVault Message', ['name', 'sender_id'], [['sender_id', '!=', dp_id]], 50, 'creation desc')
+        .then((msgs: any[]) => { if (msgs) setUnreadCount(msgs.length); })
+        .catch(() => {});
+    };
+    checkUnread();
+    const interval = setInterval(checkUnread, 10000);
+    return () => clearInterval(interval);
+  }, [dp_id]);
+
   return (
     <div className="min-h-svh bg-background pb-20">
       {/* Header */}

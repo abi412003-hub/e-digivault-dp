@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import RegisterType from './pages/RegisterType';
 import RegisterPersonal from './pages/RegisterPersonal';
 import RegisterOrg from './pages/RegisterOrg';
+import RegisterExperience from './pages/RegisterExperience';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

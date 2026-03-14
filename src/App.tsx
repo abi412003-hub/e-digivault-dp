@@ -35,6 +35,7 @@ function App() {
               <Route path="/pending" element={<Pending />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/client-detail" element={<ClientDetail />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />

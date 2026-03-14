@@ -2,14 +2,17 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDPAuth } from '@/contexts/DPAuthContext';
 import { useRegistration, type ExperienceDetails } from '@/contexts/RegistrationContext';
-import { createRecord } from '@/lib/api';
 import { ArrowLeft, ArrowUpFromLine, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
+// Edge Function endpoint — handles full registration sequence:
+// 1. Creates Frappe User  2. Creates DigiVault User  3. Creates DP Work Experience  4. Creates Organisation (if org type)
+const DP_REGISTER_URL = 'https://xorgsduvbpaokegawhbd.supabase.co/functions/v1/dp-register';
+
 const underlineClass =
-  "border-0 border-b border-input rounded-none h-12 px-0 focus-visible:ring-0 bg-transparent text-base focus:border-primary transition-colors";
+  'border-0 border-b border-input rounded-none h-12 px-0 focus-visible:ring-0 bg-transparent text-base focus:border-primary transition-colors';
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <label className="text-[14px] font-bold text-foreground">{children}</label>
@@ -22,7 +25,6 @@ const UnderlineField = ({ label, children }: { label: string; children: React.Re
   </div>
 );
 
-/* ── File Upload Row ── */
 const DOCUMENT_LABELS = [
   'Self Acknowledgement',
   'Upload - Personal Pan Card',
@@ -32,17 +34,8 @@ const DOCUMENT_LABELS = [
   'Upload - Firm Registration Details',
 ];
 
-function FileUploadRow({
-  label,
-  file,
-  onSelect,
-}: {
-  label: string;
-  file: File | null;
-  onSelect: (f: File) => void;
-}) {
+function FileUploadRow({ label, file, onSelect }: { label: string; file: File | null; onSelect: (f: File) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
-
   return (
     <div className="space-y-1">
       <FieldLabel>{label}</FieldLabel>
@@ -56,21 +49,12 @@ function FileUploadRow({
         </span>
         <ArrowUpFromLine className="w-5 h-5 text-muted-foreground shrink-0" />
       </button>
-      <input
-        ref={inputRef}
-        type="file"
-        className="hidden"
-        accept="image/*,.pdf,.doc,.docx"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onSelect(f);
-        }}
-      />
+      <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onSelect(f); }} />
     </div>
   );
 }
 
-/* ── Page ── */
 export default function RegisterExperience() {
   const navigate = useNavigate();
   const { phone, registration_type, login } = useDPAuth();
@@ -83,10 +67,6 @@ export default function RegisterExperience() {
   const set = (key: keyof ExperienceDetails) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleFileSelect = (idx: number, file: File) => {
-    setFiles((prev) => ({ ...prev, [idx]: file }));
-  };
-
   const handleSubmit = async () => {
     setSubmitting(true);
     setExperience(form);
@@ -95,67 +75,60 @@ export default function RegisterExperience() {
     const org = data.org;
 
     try {
-      // 1. Create DigiVault User
-      const userRes = await createRecord('DigiVault User', {
-        naming_series: 'DVU-.#####',
-        full_name: personal.full_name,
-        user_role: 'Delivery Partner',
-        status: 'Pending Verification',
-        mobile_number: phone,
-        whatsapp_number: personal.whatsapp,
-        email_address: personal.email,
-        address_line: personal.address,
-        state: 'Karnataka',
-        district: personal.district,
-        taluk: personal.taluk,
-        city: personal.city,
-        pincode: personal.pincode,
-        aadhaar_number: personal.aadhar,
-        pan_number: personal.pan,
-        registration_type: registration_type,
-        registration_date: new Date().toISOString().split('T')[0],
-        language_preference: 'English',
-      });
-
-      const userId = userRes?.data?.name;
-
-      if (!userId) {
-        throw new Error('Failed to create user record');
-      }
-
-      // 2. Create DP Work Experience
-      await createRecord('DP Work Experience', {
-        naming_series: 'DPWE-.#####',
-        linked_user: userId,
-        years_of_experience: form.experience_years,
-        primary_service_areas: form.primary_service_areas,
-        incorporation_number: form.incorporation_number,
-      });
-
-      // 3. If Organization, create DigiVault Organisation
-      if (registration_type === 'Organization') {
-        await createRecord('DigiVault Organisation', {
+      // Call dp-register Edge Function — handles Frappe User + DigiVault User + Work Exp + Org
+      const res = await fetch(DP_REGISTER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // Identity
+          phone,
+          full_name: personal.full_name,
+          email: personal.email || '',
+          whatsapp: personal.whatsapp || phone,
+          // Address
+          address: personal.address,
+          state: 'Karnataka',
+          district: personal.district,
+          taluk: personal.taluk,
+          city: personal.city,
+          pincode: personal.pincode,
+          // KYC
+          aadhaar: personal.aadhar,
+          pan: personal.pan,
+          // Type & experience
+          registration_type: registration_type || 'Individual',
+          experience_years: form.experience_years,
+          primary_service_areas: form.primary_service_areas,
+          incorporation_number: form.incorporation_number,
+          // Organisation fields (sent regardless — backend ignores if Individual)
           company_name: org.company_name,
           company_type: org.company_type,
           gstin_pan: org.gstin_pan,
-          business_registration_number: org.business_reg_number,
+          business_reg_number: org.business_reg_number,
           nature_of_business: org.nature_of_business,
           office_address: org.office_address,
-          state: org.state,
-          district: org.district,
-          taluk: org.taluk,
-          city: org.city,
-          pincode: org.pincode,
-          company_website: org.website,
-          number_of_employees: org.num_employees,
-          annual_revenue_range: org.annual_revenue,
-          linked_user: userId,
-        });
+          org_state: org.state || 'Karnataka',
+          org_district: org.district,
+          org_taluk: org.taluk,
+          org_city: org.city,
+          org_pincode: org.pincode,
+          website: org.website,
+          num_employees: org.num_employees,
+          annual_revenue: org.annual_revenue,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Registration failed');
       }
 
-      // 4. Update auth context
+      const dvu_id = result.dvu_id;
+
+      // Update auth context — user is now registered, pending verification
       login({
-        dp_id: userId,
+        dp_id: dvu_id,
         dp_name: personal.full_name,
         phone: phone,
         status: 'Pending Verification',
@@ -164,8 +137,9 @@ export default function RegisterExperience() {
         supabaseUserId: null,
       });
 
-      // 5. Navigate
+      toast({ title: 'Registration submitted!', description: 'Our team will verify your details.' });
       navigate('/pending');
+
     } catch (err: any) {
       console.error('Registration error:', err);
       toast({
@@ -180,71 +154,45 @@ export default function RegisterExperience() {
 
   return (
     <div className="min-h-svh bg-background px-6 pt-6 pb-10 flex flex-col">
-      {/* Back */}
       <button onClick={() => navigate(-1)} className="mb-6 self-start">
         <ArrowLeft className="w-6 h-6 text-foreground" />
       </button>
 
-      {/* Header */}
       <h1 className="text-[20px] font-bold text-foreground tracking-tight text-center mb-6">
         Work Experience
       </h1>
 
-      {/* Form */}
       <div className="space-y-5 flex-1">
         <UnderlineField label="Years of Experience in Real Estate">
-          <Input
-            type="text"
-            inputMode="numeric"
-            className={underlineClass}
-            placeholder="6"
-            value={form.experience_years}
-            onChange={set('experience_years')}
-          />
+          <Input type="text" inputMode="numeric" className={underlineClass}
+            placeholder="6" value={form.experience_years} onChange={set('experience_years')} />
         </UnderlineField>
 
         <UnderlineField label="Primary Service Areas">
-          <Input
-            className={underlineClass}
-            placeholder="Banglore"
-            value={form.primary_service_areas}
-            onChange={set('primary_service_areas')}
-          />
+          <Input className={underlineClass} placeholder="Bangalore"
+            value={form.primary_service_areas} onChange={set('primary_service_areas')} />
         </UnderlineField>
 
         <UnderlineField label="Incorporation Number">
-          <Input
-            className={underlineClass}
-            placeholder="U12345KA2020PTC123456"
-            value={form.incorporation_number}
-            onChange={set('incorporation_number')}
-          />
+          <Input className={underlineClass} placeholder="U12345KA2020PTC123456"
+            value={form.incorporation_number} onChange={set('incorporation_number')} />
         </UnderlineField>
 
-        {/* Document uploads section */}
         <div className="pt-4">
           <p className="text-[16px] font-bold text-foreground mb-4">Upload Necessary Documents</p>
           <div className="space-y-5">
             {DOCUMENT_LABELS.map((label, idx) => (
-              <FileUploadRow
-                key={idx}
-                label={label}
-                file={files[idx] ?? null}
-                onSelect={(f) => handleFileSelect(idx, f)}
-              />
+              <FileUploadRow key={idx} label={label} file={files[idx] ?? null}
+                onSelect={(f) => setFiles((prev) => ({ ...prev, [idx]: f }))} />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Next / Submit */}
       <div className="flex justify-end mt-8">
-        <Button
-          onClick={handleSubmit}
-          disabled={submitting}
-          className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white rounded-lg px-8 h-10 font-medium"
-        >
-          {submitting ? <Loader2 className="animate-spin w-5 h-5" /> : 'Next'}
+        <Button onClick={handleSubmit} disabled={submitting}
+          className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white rounded-lg px-8 h-10 font-medium">
+          {submitting ? <Loader2 className="animate-spin w-5 h-5" /> : 'Submit'}
         </Button>
       </div>
     </div>

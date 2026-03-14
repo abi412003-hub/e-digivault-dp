@@ -12,14 +12,14 @@ export default function Pending() {
   const [checking, setChecking] = useState(false);
 
   const today = new Date();
-  const regDate = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+  const regDate = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
 
   const rows = [
-    { label: 'Registration ID', value: dp_id ?? '—' },
-    { label: 'Date of Registration', value: regDate },
+    { label: 'Registration ID',       value: dp_id ?? '—' },
+    { label: 'Date of Registration',  value: regDate },
     { label: 'Channel Delivery Name', value: dp_name ?? '—' },
-    { label: 'Company Name', value: registration_type === 'Organization' ? 'Organization' : 'Individual' },
-    { label: 'Contact Number', value: phone ?? '—' },
+    { label: 'Company Name',          value: registration_type === 'Organization' ? 'Organization' : 'Individual' },
+    { label: 'Contact Number',        value: phone ?? '—' },
   ];
 
   const handleCheckStatus = async () => {
@@ -27,10 +27,18 @@ export default function Pending() {
     setChecking(true);
     try {
       const user = await fetchOne('DigiVault User', dp_id);
-      if (user?.status === 'Active') {
+      const status = user?.status ?? '';
+
+      if (status === 'Active') {
+        // Normal flow — fully verified
+        navigate('/dashboard');
+      } else if (status === 'Pending Verification') {
+        // ── TESTING MODE ──
+        // Allow bypass to dashboard even if not yet verified by admin
+        toast({ title: 'Testing mode — bypassing verification', description: 'Status is still Pending Verification' });
         navigate('/dashboard');
       } else {
-        toast({ title: 'Still pending verification', description: 'Our team is reviewing your details.' });
+        toast({ title: 'Still pending', description: `Current status: ${status || 'Unknown'}. Our team is reviewing your details.` });
       }
     } catch {
       toast({ title: 'Error', description: 'Could not check status. Try again.', variant: 'destructive' });
@@ -64,13 +72,19 @@ export default function Pending() {
           ))}
         </div>
 
-        {/* Gear icons */}
+        {/* Gear animation */}
         <div className="relative w-20 h-20 flex items-center justify-center">
-          <Settings className="w-12 h-12 text-[#3B82F6] absolute -left-1 -top-1" />
-          <Settings className="w-10 h-10 text-[#3B82F6]/70 absolute right-0 bottom-0" />
+          <Settings className="w-12 h-12 text-[#3B82F6] absolute -left-1 -top-1 animate-spin" style={{ animationDuration: '4s' }} />
+          <Settings className="w-10 h-10 text-[#3B82F6]/70 absolute right-0 bottom-0 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }} />
         </div>
 
         <p className="text-[14px] text-muted-foreground text-center">Thank you for your patience</p>
+
+        {/* Testing mode badge */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 text-center">
+          <p className="text-[12px] text-yellow-700 font-medium">🧪 Testing Mode</p>
+          <p className="text-[11px] text-yellow-600">Check Status bypasses admin verification</p>
+        </div>
 
         {/* Buttons */}
         <div className="flex flex-col items-center gap-3 pt-2">
@@ -79,12 +93,9 @@ export default function Pending() {
             disabled={checking}
             className="w-[200px] bg-primary hover:bg-primary/90 text-primary-foreground h-10 rounded-lg font-medium"
           >
-            {checking ? <Loader2 className="animate-spin w-5 h-5" /> : 'Check Status'}
+            {checking ? <Loader2 className="animate-spin w-5 h-5" /> : 'Check Status →'}
           </Button>
-          <button
-            onClick={handleLogout}
-            className="text-destructive underline text-sm font-medium"
-          >
+          <button onClick={handleLogout} className="text-destructive underline text-sm font-medium">
             Logout
           </button>
         </div>

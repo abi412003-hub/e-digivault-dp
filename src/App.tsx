@@ -61,6 +61,8 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/task-map" element={<TaskMap />} />
               <Route path="/scan" element={<ScanDocument />} />
+              <Route path="/messages" element={<MessageList />} />
+              <Route path="/messages/:taskId" element={<MessageThread />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

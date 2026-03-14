@@ -13,6 +13,7 @@ import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import ClientDetail from './pages/ClientDetail';
+import Properties from './pages/Properties';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

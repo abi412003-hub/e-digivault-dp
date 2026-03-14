@@ -25,6 +25,8 @@ import FundRequest from './pages/FundRequest';
 import Settings from './pages/Settings';
 import TaskMap from './pages/TaskMap';
 import ScanDocument from './pages/ScanDocument';
+import MessageList from './pages/MessageList';
+import MessageThread from './pages/MessageThread';
 
 const queryClient = new QueryClient();
 

@@ -24,6 +24,7 @@ import Transactions from './pages/Transactions';
 import FundRequest from './pages/FundRequest';
 import Settings from './pages/Settings';
 import TaskMap from './pages/TaskMap';
+import ScanDocument from './pages/ScanDocument';
 
 const queryClient = new QueryClient();
 

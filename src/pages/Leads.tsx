@@ -59,7 +59,7 @@ export default function Leads() {
         });
       })
       .catch(() => {});
-  }, [user_id]);
+  }, [dp_id]);
 
   const fmtDate = (d: string) => {
     if (!d) return '';

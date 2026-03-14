@@ -45,7 +45,7 @@ function App() {
               <Route path="/task-details" element={<TaskDetails />} />
               <Route path="/estimate-list" element={<EstimateList />} />
               <Route path="/estimate-builder" element={<EstimateBuilder />} />
-              <Route path="/leads" element={<Placeholder />} />
+              <Route path="/leads" element={<Leads />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />
             </Routes>

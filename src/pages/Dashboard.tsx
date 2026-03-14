@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useDPAuth } from '@/contexts/DPAuthContext';
 import { fetchList } from '@/lib/api';
 import { getFileUrl } from '@/lib/api';
-import { MessageSquare, Home, User, RefreshCw } from 'lucide-react';
+import { MessageSquare, Home, User, RefreshCw, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 
 /* ── Donut Ring ── */
@@ -107,6 +108,7 @@ function formatDate(d: string) {
 /* ── Dashboard ── */
 export default function Dashboard() {
   const { profile_photo, dp_id } = useDPAuth();
+  const navigate = useNavigate();
   const photoUrl = getFileUrl(profile_photo ?? '');
 
   const [docCounts, setDocCounts] = useState({ completed: 0, pending: 0, rejected: 0, total: 0 });
@@ -166,6 +168,9 @@ export default function Dashboard() {
       <header className="sticky top-0 z-20 bg-background border-b border-border h-14 flex items-center justify-between px-4">
         <h1 className="text-[20px] font-bold text-foreground">Dashboard</h1>
         <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/task-map')} className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-muted-foreground" />
+          </button>
           <button className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
             <MessageSquare className="w-5 h-5 text-muted-foreground" />
           </button>

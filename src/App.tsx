@@ -29,7 +29,7 @@ function App() {
               <Route path="/register-personal" element={<RegisterPersonal />} />
               <Route path="/register-org" element={<RegisterOrg />} />
               <Route path="/register-experience" element={<RegisterExperience />} />
-              <Route path="/pending" element={<Placeholder />} />
+              <Route path="/pending" element={<Pending />} />
               <Route path="/dashboard" element={<Placeholder />} />
               <Route path="/clients" element={<Placeholder />} />
               <Route path="/leads" element={<Placeholder />} />

@@ -135,7 +135,13 @@ export default function Clients() {
             <p className="text-muted-foreground text-sm">No clients found</p>
           </div>
         ) : (
-          filtered.map((c) => <ClientCard key={c.name} client={c} />)
+          filtered.map((c) => (
+            <ClientCard
+              key={c.name}
+              client={c}
+              onClick={() => navigate(`/client-detail?id=${c.name}`)}
+            />
+          ))
         )}
       </div>
 

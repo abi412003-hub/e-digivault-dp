@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useDPAuth } from '@/contexts/DPAuthContext';
 import { fetchList } from '@/lib/api';
 import { getFileUrl } from '@/lib/api';
-import { MessageSquare, Home, User, RefreshCw } from 'lucide-react';
+import { MessageSquare, Home, User, RefreshCw, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 
 /* ── Donut Ring ── */

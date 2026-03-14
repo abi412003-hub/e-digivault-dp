@@ -47,7 +47,7 @@ function App() {
               <Route path="/estimate-list" element={<EstimateList />} />
               <Route path="/estimate-builder" element={<EstimateBuilder />} />
               <Route path="/leads" element={<Leads />} />
-              <Route path="/transactions" element={<Placeholder />} />
+              <Route path="/transactions" element={<Transactions />} />
               <Route path="/settings" element={<Placeholder />} />
             </Routes>
           </BrowserRouter>

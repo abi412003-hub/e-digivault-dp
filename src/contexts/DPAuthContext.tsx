@@ -83,6 +83,13 @@ export const DPAuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const setPhone = (p: string) => setState((s) => ({ ...s, phone: p }));
+  const setRegistrationType = (type: string) => {
+    setState((s) => {
+      const next = { ...s, registration_type: type };
+      localStorage.setItem("edigivault_dp", JSON.stringify(next));
+      return next;
+    });
+  };
 
   return (
     <DPAuthContext.Provider value={{ ...state, isLoggedIn: !!state.dp_id, isLoading, setPhone, login, logout }}>

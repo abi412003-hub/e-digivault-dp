@@ -92,7 +92,7 @@ export const DPAuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <DPAuthContext.Provider value={{ ...state, isLoggedIn: !!state.dp_id, isLoading, setPhone, login, logout }}>
+    <DPAuthContext.Provider value={{ ...state, isLoggedIn: !!state.dp_id, isLoading, setPhone, setRegistrationType, login, logout }}>
       {children}
     </DPAuthContext.Provider>
   );

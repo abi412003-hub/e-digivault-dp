@@ -172,8 +172,13 @@ export default function Dashboard() {
           <button onClick={() => navigate('/task-map')} className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
             <MapPin className="w-5 h-5 text-muted-foreground" />
           </button>
-          <button className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
+          <button onClick={() => navigate('/messages')} className="w-9 h-9 border border-border rounded-lg flex items-center justify-center relative">
             <MessageSquare className="w-5 h-5 text-muted-foreground" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
           <button className="w-9 h-9 border border-border rounded-lg flex items-center justify-center">
             <Home className="w-5 h-5 text-muted-foreground" />

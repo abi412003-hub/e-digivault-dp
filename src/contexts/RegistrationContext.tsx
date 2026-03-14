@@ -16,14 +16,20 @@ export interface PersonalDetails {
 }
 
 export interface OrgDetails {
-  org_name: string;
-  org_type: string;
-  org_address: string;
-  org_state: string;
-  org_district: string;
-  org_city: string;
-  org_pincode: string;
-  gst: string;
+  company_name: string;
+  company_type: string;
+  gstin_pan: string;
+  business_reg_number: string;
+  nature_of_business: string;
+  office_address: string;
+  state: string;
+  district: string;
+  taluk: string;
+  city: string;
+  pincode: string;
+  website: string;
+  num_employees: string;
+  annual_revenue: string;
 }
 
 export interface ExperienceDetails {
@@ -51,8 +57,9 @@ const emptyPersonal: PersonalDetails = {
 };
 
 const emptyOrg: OrgDetails = {
-  org_name: '', org_type: '', org_address: '', org_state: 'Karnataka',
-  org_district: '', org_city: '', org_pincode: '', gst: '',
+  company_name: '', company_type: '', gstin_pan: '', business_reg_number: '',
+  nature_of_business: '', office_address: '', state: 'Karnataka', district: '',
+  taluk: '', city: '', pincode: '', website: '', num_employees: '', annual_revenue: '',
 };
 
 const emptyExperience: ExperienceDetails = {

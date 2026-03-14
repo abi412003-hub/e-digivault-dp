@@ -7,6 +7,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import Login from './pages/Login';
 import RegisterType from './pages/RegisterType';
 import RegisterPersonal from './pages/RegisterPersonal';
+import RegisterOrg from './pages/RegisterOrg';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();
@@ -24,7 +25,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register-type" element={<RegisterType />} />
               <Route path="/register-personal" element={<RegisterPersonal />} />
-              <Route path="/register-org" element={<Placeholder />} />
+              <Route path="/register-org" element={<RegisterOrg />} />
               <Route path="/register-experience" element={<Placeholder />} />
               <Route path="/pending" element={<Placeholder />} />
               <Route path="/dashboard" element={<Placeholder />} />

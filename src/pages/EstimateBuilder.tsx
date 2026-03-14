@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDPAuth } from '@/contexts/DPAuthContext';
-import { getFileUrl, createRecord, updateRecord, fetchOne, fetchList } from '@/lib/api';
+import { getFileUrl, createRecord, updateRecord, fetchList } from '@/lib/api';
 import {
   ArrowLeft,
   MessageSquare,
@@ -10,16 +10,29 @@ import {
   FileText,
   Plus,
   Pencil,
+  Clock,
+  Diamond,
+  CheckCircle,
 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import AddStepModal, { type StepFormData } from '@/components/AddStepModal';
+import { useToast } from '@/hooks/use-toast';
 
 type TabKey = 'Required Document' | 'Process Flow' | 'Report';
 const TABS: TabKey[] = ['Required Document', 'Process Flow', 'Report'];
 
+function getStepDays(s: StepFormData) {
+  if (!s.date_from || !s.date_to) return 0;
+  const diff = Math.ceil(
+    (new Date(s.date_to).getTime() - new Date(s.date_from).getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return diff > 0 ? diff : 0;
+}
+
 export default function EstimateBuilder() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { toast } = useToast();
   const clientId = params.get('client') ?? '';
   const estimateParam = params.get('estimate') ?? '';
   const { profile_photo } = useDPAuth();
@@ -28,6 +41,7 @@ export default function EstimateBuilder() {
   const [activeTab, setActiveTab] = useState<TabKey>('Process Flow');
   const [steps, setSteps] = useState<StepFormData[]>([]);
   const [draftId, setDraftId] = useState(estimateParam);
+  const [submitting, setSubmitting] = useState(false);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -106,19 +120,16 @@ export default function EstimateBuilder() {
 
     try {
       if (editingIdx !== null && steps[editingIdx]?.id) {
-        // Edit existing
         await updateRecord('DigiVault Estimate Step', steps[editingIdx].id!, body);
         setSteps((prev) =>
           prev.map((s, i) => (i === editingIdx ? { ...data, id: s.id } : s))
         );
       } else {
-        // New step
         const res = await createRecord('DigiVault Estimate Step', body);
         const newStep = { ...data, id: res?.data?.name };
         setSteps((prev) => [...prev, newStep]);
       }
     } catch {
-      // Still update local state
       if (editingIdx !== null) {
         setSteps((prev) => prev.map((s, i) => (i === editingIdx ? data : s)));
       } else {
@@ -135,16 +146,28 @@ export default function EstimateBuilder() {
     0
   );
 
-  const totalDays = steps.reduce((a, s) => {
-    if (!s.date_from || !s.date_to) return a;
-    const diff = Math.ceil(
-      (new Date(s.date_to).getTime() - new Date(s.date_from).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return a + (diff > 0 ? diff : 0);
-  }, 0);
+  const totalDays = steps.reduce((a, s) => a + getStepDays(s), 0);
+
+  const handleSendForApproval = async () => {
+    if (!draftId || submitting) return;
+    setSubmitting(true);
+    try {
+      await updateRecord('DigiVault Estimate', draftId, {
+        status: 'Submitted',
+        total_time_days: totalDays,
+        total_price: totalCost,
+      });
+      toast({ title: 'Estimate sent for approval' });
+      navigate(`/estimate-list?client=${clientId}`);
+    } catch {
+      toast({ title: 'Failed to submit', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="min-h-svh bg-background pb-20">
+    <div className="min-h-svh bg-background pb-40">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-background border-b border-border h-14 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
@@ -202,7 +225,7 @@ export default function EstimateBuilder() {
           {activeTab === 'Process Flow' && (
             <div className="relative pl-7">
               {/* Vertical line */}
-              {(steps.length > 0) && (
+              {steps.length > 0 && (
                 <div
                   className="absolute left-[7px] top-2 w-0.5 bg-[#3B82F6]"
                   style={{ height: `calc(100% - 8px)` }}
@@ -210,49 +233,67 @@ export default function EstimateBuilder() {
               )}
 
               {/* Existing steps */}
-              {steps.map((step, idx) => (
-                <div key={idx} className="relative flex items-start gap-3 mb-4">
-                  <div className="absolute -left-7 top-4 w-4 h-4 rounded-full bg-[#3B82F6] z-10" />
+              {steps.map((step, idx) => {
+                const days = getStepDays(step);
+                return (
+                  <div key={idx} className="relative flex items-start gap-3 mb-4">
+                    <div className="absolute -left-7 top-4 w-4 h-4 rounded-full bg-[#3B82F6] z-10" />
 
-                  <div className="flex-1 bg-background border border-border rounded-xl p-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-[14px] font-bold text-foreground">{step.process || `Step ${step.step_number}`}</p>
-                        {step.date_from && step.date_to && (
-                          <p className="text-[12px] text-muted-foreground mt-0.5">
-                            {step.date_from} → {step.date_to}
-                          </p>
-                        )}
-                        {(step.expense_real > 0 || step.expense_bribe > 0 || step.expense_mind > 0) && (
-                          <div className="flex gap-2 mt-1 flex-wrap">
-                            {step.expense_real > 0 && (
-                              <span className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                                Real: ₹{step.expense_real}
-                              </span>
-                            )}
-                            {step.expense_bribe > 0 && (
-                              <span className="text-[11px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
-                                Bribe: ₹{step.expense_bribe}
-                              </span>
-                            )}
-                            {step.expense_mind > 0 && (
-                              <span className="text-[11px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">
-                                Mind: ₹{step.expense_mind}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                    <div className="flex-1 bg-background border border-border rounded-2xl shadow-sm p-4">
+                      {/* Top row */}
+                      <div className="flex items-center justify-between">
+                        <p className="text-[16px] font-bold text-foreground">
+                          Step {step.step_number}
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => openEditModal(idx)}
+                            className="text-[#3B82F6] text-[12px] font-medium flex items-center gap-1"
+                          >
+                            <Pencil className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          {days > 0 && (
+                            <span className="text-[#3B82F6] text-[12px] font-medium flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" /> {days}D
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => openEditModal(idx)}
-                        className="text-[#3B82F6] text-[13px] font-medium flex items-center gap-1 shrink-0 ml-2"
-                      >
-                        <Pencil className="w-3.5 h-3.5" /> Edit
-                      </button>
+
+                      {/* Expense chips */}
+                      <div className="flex gap-2 mt-3">
+                        {[
+                          { label: 'Real', val: step.expense_real },
+                          { label: 'Bribe', val: step.expense_bribe },
+                          { label: 'Mind', val: step.expense_mind },
+                        ].map((e) => (
+                          <div
+                            key={e.label}
+                            className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 flex items-center gap-2"
+                          >
+                            <Diamond className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-semibold text-foreground leading-tight">
+                                {e.val || 0}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground leading-tight">
+                                {e.label}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Description */}
+                      {step.description && (
+                        <p className="text-[12px] text-muted-foreground mt-3 line-clamp-2">
+                          {step.description}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Add next step */}
               <div className="relative flex items-center gap-3">
@@ -287,13 +328,7 @@ export default function EstimateBuilder() {
                       <span className="text-[12px] font-medium text-muted-foreground text-right">Cost</span>
                     </div>
                     {steps.map((step, idx) => {
-                      const days =
-                        step.date_from && step.date_to
-                          ? Math.ceil(
-                              (new Date(step.date_to).getTime() - new Date(step.date_from).getTime()) /
-                                (1000 * 60 * 60 * 24)
-                            )
-                          : 0;
+                      const days = getStepDays(step);
                       const cost = (step.expense_real || 0) + (step.expense_bribe || 0) + (step.expense_mind || 0);
                       return (
                         <div
@@ -322,6 +357,28 @@ export default function EstimateBuilder() {
           )}
         </div>
       </div>
+
+      {/* Bottom sticky bar — only when steps exist */}
+      {steps.length > 0 && (
+        <div className="fixed bottom-16 left-0 right-0 z-30 bg-background border-t border-border px-4 py-3 flex items-center justify-between">
+          <div>
+            <p className="text-[13px] text-muted-foreground">
+              Total Time: <span className="font-bold text-[#3B82F6]">{totalDays} Days</span>
+            </p>
+            <p className="text-[13px] text-muted-foreground">
+              Total Price: <span className="font-bold text-[#3B82F6]">{totalCost}rs</span>
+            </p>
+          </div>
+          <button
+            onClick={handleSendForApproval}
+            disabled={submitting}
+            className="bg-[#16a34a] text-white rounded-xl px-5 py-2.5 text-[14px] font-bold flex items-center gap-2 disabled:opacity-60"
+          >
+            <CheckCircle className="w-4 h-4" />
+            {submitting ? 'Sending…' : 'Send For Approval'}
+          </button>
+        </div>
+      )}
 
       {/* Step Modal */}
       <AddStepModal

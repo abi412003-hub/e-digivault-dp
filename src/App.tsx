@@ -56,6 +56,7 @@ function App() {
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/fund-request" element={<FundRequest />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/task-map" element={<TaskMap />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

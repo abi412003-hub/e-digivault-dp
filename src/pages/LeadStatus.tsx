@@ -7,6 +7,7 @@ import BottomNav from '@/components/BottomNav';
 
 type TabKey = 'Approved' | 'Pending' | 'Rejected';
 const TABS: TabKey[] = ['Approved', 'Pending', 'Rejected'];
+// lead_status values on ERPNext
 const STATUS_MAP: Record<TabKey, string> = { Approved: 'Verified', Pending: 'Pending', Rejected: 'Rejected' };
 
 function maskPhone(p: string) {
@@ -27,28 +28,18 @@ export default function LeadStatus() {
   useEffect(() => {
     if (!dp_id) return;
     setLoading(true);
-    fetchList(
-      'DigiVault Lead',
-      ['name', 'lead_name', 'phone', 'email', 'creation', 'photo', 'status'],
-      [['assigned_to', '=', dp_id]],
-      200,
-      'creation desc'
-    )
+    // lead_status = correct field; phone_no = correct field; created_by = correct link field
+    fetchList('DigiVault Lead', ['name','lead_name','phone_no','email','creation','lead_photo','lead_status'], [['created_by','=',dp_id]], 200, 'creation desc')
       .then((d: any[]) => d && setLeads(d))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [dp_id]);
 
   const filtered = leads
-    .filter((l) => l.status === STATUS_MAP[activeTab])
-    .filter((l) =>
-      search.trim()
-        ? (l.lead_name ?? '').toLowerCase().includes(search.toLowerCase()) ||
-          (l.email ?? '').toLowerCase().includes(search.toLowerCase())
-        : true
-    );
+    .filter((l) => l.lead_status === STATUS_MAP[activeTab])
+    .filter((l) => !search.trim() || (l.lead_name ?? '').toLowerCase().includes(search.toLowerCase()) || (l.email ?? '').toLowerCase().includes(search.toLowerCase()));
 
-  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '—';
+  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g,'-') : '—';
 
   return (
     <div className="min-h-svh bg-background pb-20">
@@ -71,13 +62,11 @@ export default function LeadStatus() {
           <Search className="w-5 h-5 text-muted-foreground shrink-0" />
           <input type="text" placeholder="Search here" value={search} onChange={(e) => setSearch(e.target.value)} className="flex-1 bg-transparent text-base text-foreground placeholder:text-muted-foreground outline-none" />
         </div>
-
         <div className="flex gap-2 mt-3 bg-gray-100 rounded-full p-1">
           {TABS.map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 rounded-full text-[13px] font-medium transition-colors ${activeTab === tab ? 'bg-white shadow text-foreground font-semibold' : 'text-muted-foreground'}`}>{tab}</button>
           ))}
         </div>
-
         <div className="mt-4 space-y-3">
           {loading ? (
             [1,2,3].map(i => <div key={i} className="h-20 bg-muted rounded-2xl animate-pulse" />)
@@ -88,7 +77,7 @@ export default function LeadStatus() {
             </div>
           ) : (
             filtered.map((lead) => {
-              const photoUrl = getFileUrl(lead.photo ?? '');
+              const photoUrl = getFileUrl(lead.lead_photo ?? '');
               return (
                 <div key={lead.name} className="bg-background rounded-2xl border border-muted shadow-sm p-4 flex items-center gap-3">
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-muted">
@@ -96,7 +85,7 @@ export default function LeadStatus() {
                   </div>
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <p className="text-[16px] font-bold text-foreground">{lead.name}</p>
-                    <p className="text-[13px] text-gray-700">Phone No: {maskPhone(lead.phone ?? '')}</p>
+                    <p className="text-[13px] text-gray-700">Phone No: {maskPhone(lead.phone_no ?? '')}</p>
                     <p className="text-[13px] text-[#1A3C8E]">{lead.email ?? '—'}</p>
                     <p className="text-[12px] text-muted-foreground">Date: {fmtDate(lead.creation)}</p>
                   </div>
@@ -106,7 +95,6 @@ export default function LeadStatus() {
           )}
         </div>
       </div>
-
       <BottomNav />
     </div>
   );

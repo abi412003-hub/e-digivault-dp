@@ -134,6 +134,7 @@ export default function RegisterExperience() {
         status: 'Pending Verification',
         profile_photo: null,
         registration_type: registration_type,
+        user_role: null,
         supabaseUserId: null,
       });
 

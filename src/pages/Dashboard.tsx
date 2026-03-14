@@ -218,12 +218,32 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Card 2: Estimation */}
+      {/* Card 2: Estimation + Service Requests */}
       <div className="mx-4 mt-4 bg-background border border-border rounded-xl p-4 space-y-3">
         <h2 className="text-[16px] font-bold text-foreground">Estimation</h2>
         <ProgressBar label="Verified" value={srCounts.verified} total={srCounts.total} fill="#22C55E" bg="#DCFCE7" />
         <ProgressBar label="Pending" value={srCounts.pending} total={srCounts.total} fill="#F59E0B" bg="#FEF3C7" />
         <ProgressBar label="Rejected" value={srCounts.rejected} total={srCounts.total} fill="#EF4444" bg="#FEE2E2" />
+
+        {/* Trackable service requests */}
+        {serviceRequests.length > 0 && (
+          <div className="pt-2 space-y-2">
+            <p className="text-[12px] font-medium text-muted-foreground">Active Requests</p>
+            {serviceRequests.slice(0, 5).map((sr) => (
+              <button
+                key={sr.name}
+                onClick={() => navigate(`/service-request/${sr.name}/track`)}
+                className="w-full flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2.5 active:bg-muted transition-colors"
+              >
+                <div className="text-left min-w-0">
+                  <p className="text-[13px] font-medium text-foreground truncate">{sr.main_service || sr.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{sr.request_status}</p>
+                </div>
+                <Eye className="w-4 h-4 text-primary shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Card 3: Recent Activity */}

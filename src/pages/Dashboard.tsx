@@ -133,8 +133,8 @@ export default function Dashboard() {
       })
       .catch(() => {});
 
-    // Fetch service requests
-    fetchList('DigiVault Service Request', ['name', 'request_status'], [])
+    // Fetch service requests (with names for navigation)
+    fetchList('DigiVault Service Request', ['name', 'request_status', 'main_service', 'progress_percentage'], [])
       .then((srs: any[]) => {
         if (!srs) return;
         let verified = 0, pending = 0, rejected = 0;
@@ -146,6 +146,7 @@ export default function Dashboard() {
         });
         const total = verified + pending + rejected;
         setSrCounts({ verified, pending, rejected, total });
+        setServiceRequests(srs);
       })
       .catch(() => {});
 

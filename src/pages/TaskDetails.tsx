@@ -4,7 +4,7 @@ import { useDPAuth } from '@/contexts/DPAuthContext';
 import { fetchOne, fetchList, getFileUrl, updateRecord } from '@/lib/api';
 import {
   ArrowLeft, MessageSquare, Bell, User,
-  IdCard, Phone, Mail, MapPin, Eye, Plus, Upload, CheckCircle2,
+  IdCard, Phone, Mail, MapPin, Eye, Plus, Upload, CheckCircle2, ScanLine,
 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { toast } from '@/hooks/use-toast';
@@ -240,7 +240,10 @@ export default function TaskDetails() {
         ) : (
           <div className="space-y-3">
             <div className="flex gap-3">
-              <button onClick={() => navigate(`/document-upload?task=${taskId}`)} className="flex-1 border border-[#3B82F6] text-[#3B82F6] rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5">
+              <button onClick={() => navigate(`/scan?task=${taskId}`)} className="flex-1 border border-primary text-primary rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5">
+                <ScanLine className="w-4 h-4" /> Scan
+              </button>
+              <button onClick={() => navigate(`/document-upload?task=${taskId}`)} className="flex-1 border border-primary text-primary rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5">
                 <Upload className="w-4 h-4" /> Upload
               </button>
               <button onClick={handleSendForApproval} disabled={!allStepsDone || sending} className="flex-1 bg-[#3B82F6] text-white rounded-xl h-12 text-[15px] font-medium flex items-center justify-center gap-1.5 disabled:opacity-50">

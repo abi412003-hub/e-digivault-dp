@@ -24,6 +24,7 @@ import Transactions from './pages/Transactions';
 import FundRequest from './pages/FundRequest';
 import Settings from './pages/Settings';
 import TaskMap from './pages/TaskMap';
+import ScanDocument from './pages/ScanDocument';
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ function App() {
               <Route path="/fund-request" element={<FundRequest />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/task-map" element={<TaskMap />} />
+              <Route path="/scan" element={<ScanDocument />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDPAuth } from '@/contexts/DPAuthContext';
 import { fetchList } from '@/lib/api';
 import { getFileUrl } from '@/lib/api';
-import { MessageSquare, Home, User, RefreshCw, MapPin } from 'lucide-react';
+import { MessageSquare, Home, User, RefreshCw, MapPin, ScanLine } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 
@@ -247,6 +247,14 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Scan FAB */}
+      <button
+        onClick={() => navigate('/scan')}
+        className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center z-20"
+      >
+        <ScanLine className="w-6 h-6" />
+      </button>
 
       <BottomNav />
     </div>

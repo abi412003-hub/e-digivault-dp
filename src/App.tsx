@@ -58,6 +58,7 @@ function App() {
               <Route path="/fund-request" element={<FundRequest />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/task-map" element={<TaskMap />} />
+              <Route path="/scan" element={<ScanDocument />} />
             </Routes>
           </BrowserRouter>
         </RegistrationProvider>

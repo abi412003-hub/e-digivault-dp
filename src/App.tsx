@@ -16,6 +16,7 @@ import ClientDetail from './pages/ClientDetail';
 import Properties from './pages/Properties';
 import TaskDetails from './pages/TaskDetails';
 import EstimateList from './pages/EstimateList';
+import EstimateBuilder from './pages/EstimateBuilder';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ function App() {
               <Route path="/properties" element={<Properties />} />
               <Route path="/task-details" element={<TaskDetails />} />
               <Route path="/estimate-list" element={<EstimateList />} />
+              <Route path="/estimate-builder" element={<EstimateBuilder />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />

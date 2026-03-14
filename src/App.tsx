@@ -39,6 +39,7 @@ function App() {
               <Route path="/clients" element={<Clients />} />
               <Route path="/client-detail" element={<ClientDetail />} />
               <Route path="/properties" element={<Properties />} />
+              <Route path="/task-details" element={<TaskDetails />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />

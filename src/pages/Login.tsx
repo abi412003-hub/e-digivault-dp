@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { fetchList } from '@/lib/api';
@@ -23,14 +23,19 @@ const UnderlineInput = ({ icon: Icon, label, ...props }: any) => (
 
 const OTP_FIELDS = ["name", "full_name", "mobile_number", "user_role", "status", "profile_photo", "registration_type"];
 
-function useOtpFlow() {
+interface VerifyResult {
+  authData: any;
+  userStatus: string | null;
+  isNewUser: boolean;
+}
+
+function useOtpFlow(onVerified: (result: VerifyResult) => void) {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(30);
   const { login, setPhone: setContextPhone } = useDPAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -70,7 +75,7 @@ function useOtpFlow() {
 
       if (users && users.length > 0) {
         const user = users[0];
-        login({
+        const authData = {
           dp_id: user.name,
           dp_name: user.full_name,
           phone: user.mobile_number,
@@ -78,12 +83,12 @@ function useOtpFlow() {
           profile_photo: user.profile_photo,
           registration_type: user.registration_type,
           supabaseUserId: data.user?.id ?? null,
-        });
-        if (user.status === "Active") navigate('/dashboard');
-        else if (user.status === "Pending Verification") navigate('/pending');
+        };
+        login(authData);
+        onVerified({ authData, userStatus: user.status, isNewUser: false });
       } else {
         setContextPhone(phone);
-        navigate('/register-type');
+        onVerified({ authData: null, userStatus: null, isNewUser: true });
       }
       setLoading(false);
     }
@@ -92,9 +97,90 @@ function useOtpFlow() {
   return { phone, setPhone, otp, step, setStep, loading, countdown, sendOtp, resendOtp, verifyOtp };
 }
 
+/* ── T&C Bottom Sheet ── */
+function TncSheet({ onContinue }: { onContinue: () => void }) {
+  const [accepted, setAccepted] = useState(false);
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 z-40"
+      />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed bottom-0 left-0 right-0 bg-background rounded-t-2xl z-50 p-6 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]"
+      >
+        <div className="w-full max-w-sm mx-auto space-y-5">
+          <h2 className="text-[18px] font-bold text-foreground text-center">T&C</h2>
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <button
+              type="button"
+              onClick={() => setAccepted(!accepted)}
+              className={`mt-0.5 w-5 h-5 shrink-0 border-2 rounded transition-colors flex items-center justify-center ${
+                accepted ? 'bg-primary border-primary' : 'border-muted-foreground'
+              }`}
+            >
+              {accepted && (
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
+            <span className="text-[14px] text-foreground">
+              click here to accept Terms & Conditions & Privacy Policy
+            </span>
+          </label>
+
+          <p className="text-[14px] text-muted-foreground leading-relaxed">
+            By signing in, creating an account i am agreeing to DigiVault{' '}
+            <a href="#" className="text-primary underline">Terms & Conditions</a>{' '}
+            and to our{' '}
+            <a href="#" className="text-primary underline">Privacy Policy</a>
+          </p>
+
+          <Button
+            onClick={onContinue}
+            disabled={!accepted}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-lg font-medium text-base disabled:opacity-50"
+          >
+            Continue
+          </Button>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+/* ── Main Login Page ── */
 export default function Login() {
-  const flow = useOtpFlow();
+  const navigate = useNavigate();
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [pendingNav, setPendingNav] = useState<{ userStatus: string | null; isNewUser: boolean } | null>(null);
+
+  const handleVerified = useCallback((result: VerifyResult) => {
+    setPendingNav({ userStatus: result.userStatus, isNewUser: result.isNewUser });
+  }, []);
+
+  const handleTncContinue = () => {
+    if (!pendingNav) return;
+    setPendingNav(null);
+    if (pendingNav.isNewUser) {
+      navigate('/register-type');
+    } else if (pendingNav.userStatus === "Active") {
+      navigate('/dashboard');
+    } else if (pendingNav.userStatus === "Pending Verification") {
+      navigate('/pending');
+    }
+  };
+
+  const flow = useOtpFlow(handleVerified);
 
   return (
     <div className="min-h-svh bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -184,17 +270,23 @@ export default function Login() {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="absolute bottom-0 left-0 right-0 bg-background rounded-t-[20px] z-50 px-6 pt-8 pb-10 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]"
             >
-              <RegisterSheet onClose={() => setIsRegisterOpen(false)} />
+              <RegisterSheet onClose={() => setIsRegisterOpen(false)} onVerified={handleVerified} />
             </motion.div>
           </>
         )}
+      </AnimatePresence>
+
+      {/* T&C Sheet */}
+      <AnimatePresence>
+        {pendingNav && <TncSheet onContinue={handleTncContinue} />}
       </AnimatePresence>
     </div>
   );
 }
 
-function RegisterSheet({ onClose }: { onClose: () => void }) {
-  const flow = useOtpFlow();
+/* ── Register Sheet ── */
+function RegisterSheet({ onClose, onVerified }: { onClose: () => void; onVerified: (r: VerifyResult) => void }) {
+  const flow = useOtpFlow(onVerified);
 
   return (
     <div className="w-full max-w-sm mx-auto space-y-6">

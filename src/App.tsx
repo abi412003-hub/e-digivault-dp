@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import ClientDetail from './pages/ClientDetail';
 import Properties from './pages/Properties';
+import TaskDetails from './pages/TaskDetails';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ function App() {
               <Route path="/clients" element={<Clients />} />
               <Route path="/client-detail" element={<ClientDetail />} />
               <Route path="/properties" element={<Properties />} />
+              <Route path="/task-details" element={<TaskDetails />} />
               <Route path="/leads" element={<Placeholder />} />
               <Route path="/transactions" element={<Placeholder />} />
               <Route path="/settings" element={<Placeholder />} />

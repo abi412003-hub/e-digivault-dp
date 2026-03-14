@@ -23,6 +23,7 @@ import AddLead from './pages/AddLead';
 import Transactions from './pages/Transactions';
 import FundRequest from './pages/FundRequest';
 import Settings from './pages/Settings';
+import TaskMap from './pages/TaskMap';
 
 const queryClient = new QueryClient();
 

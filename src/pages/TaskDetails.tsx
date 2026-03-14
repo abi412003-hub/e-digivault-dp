@@ -4,7 +4,7 @@ import { useDPAuth } from '@/contexts/DPAuthContext';
 import { fetchOne, fetchList, getFileUrl, updateRecord } from '@/lib/api';
 import {
   ArrowLeft, MessageSquare, Bell, User,
-  IdCard, Phone, Mail, MapPin, Eye, Plus, Upload, CheckCircle2,
+  IdCard, Phone, Mail, MapPin, Eye, Plus, Upload, CheckCircle2, ScanLine,
 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { toast } from '@/hooks/use-toast';

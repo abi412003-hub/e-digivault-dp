@@ -63,7 +63,7 @@ const emptyOrg: OrgDetails = {
 };
 
 const emptyExperience: ExperienceDetails = {
-  experience_years: '', specialization: '', license_number: '',
+  experience_years: '', primary_service_areas: '', incorporation_number: '',
 };
 
 const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);

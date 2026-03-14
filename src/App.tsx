@@ -11,6 +11,7 @@ import RegisterOrg from './pages/RegisterOrg';
 import RegisterExperience from './pages/RegisterExperience';
 import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
+import Clients from './pages/Clients';
 import Placeholder from './pages/Placeholder';
 
 const queryClient = new QueryClient();

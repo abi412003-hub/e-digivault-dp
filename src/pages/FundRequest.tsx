@@ -43,7 +43,10 @@ export default function FundRequest() {
   }, [dp_id]);
 
   const handleSubmit = async () => {
-    if (!clientId.trim() || !amount.trim()) { toast({ title: 'Client ID and Amount are required', variant: 'destructive' }); return; }
+    if (!clientId.trim()) { toast({ title: 'Client ID is required', variant: 'destructive' }); return; }
+    if (!amount.trim() || isNaN(Number(amount)) || Number(amount) <= 0) { toast({ title: 'Enter a valid amount', variant: 'destructive' }); return; }
+    if (!jobId.trim()) { toast({ title: 'Job ID is required', variant: 'destructive' }); return; }
+    if (!project.trim()) { toast({ title: 'Project is required', variant: 'destructive' }); return; }
     setSubmitting(true);
     try {
       await createRecord('DigiVault Fund Request', {

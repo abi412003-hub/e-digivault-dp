@@ -68,7 +68,7 @@ export default function AddLead() {
           ...base,
           lead_name: orgName,
           lead_type: 'Organization',
-          phone_no: '0000000000', // required field — use placeholder if no phone given
+          phone_no: phone || '0000000000', // required field
           org_name: orgName,
           org_address: regAddress,
           org_establishment_date: dateEstablished || undefined,

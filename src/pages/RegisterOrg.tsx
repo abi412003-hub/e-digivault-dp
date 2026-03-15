@@ -78,7 +78,14 @@ export default function RegisterOrg() {
     navigate('/register-experience');
   };
 
-  const isValid = form.company_name.trim().length > 0;
+  const isValid = 
+    form.company_name.trim().length > 0 &&
+    form.company_type.trim().length > 0 &&
+    form.gstin_pan.trim().length > 0 &&
+    form.registered_address.trim().length > 0 &&
+    form.district.trim().length > 0 &&
+    form.taluk.trim().length > 0 &&
+    form.pincode.trim().length === 6;
 
   return (
     <div className="min-h-svh bg-background px-6 pt-6 pb-10 flex flex-col">

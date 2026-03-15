@@ -47,6 +47,10 @@ export default function ExpenditureLog() {
   const handleSubmit = async () => {
     if (!expType) { toast({ title: 'Select a transaction type', variant: 'destructive' }); return; }
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) { toast({ title: 'Enter a valid amount', variant: 'destructive' }); return; }
+    if (!notes.trim()) { toast({ title: 'Notes are required', variant: 'destructive' }); return; }
+    if (!clientIdRef.trim()) { toast({ title: 'Client ID is required', variant: 'destructive' }); return; }
+    if (!jobId.trim()) { toast({ title: 'Job ID is required', variant: 'destructive' }); return; }
+    if (!serviceName.trim()) { toast({ title: 'Service name is required', variant: 'destructive' }); return; }
     setSubmitting(true);
     try {
       await createRecord('DigiVault Transaction', {
@@ -134,12 +138,12 @@ export default function ExpenditureLog() {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[14px] font-bold text-foreground">Notes (optional)</label>
+          <label className="text-[14px] font-bold text-foreground">Notes *</label>
           <Textarea rows={3} className="rounded-xl border border-input bg-transparent text-base px-3 py-2 resize-none"
             placeholder="Describe the transaction..." value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
 
-        <button onClick={handleSubmit} disabled={submitting || !expType || !amount}
+        <button onClick={handleSubmit} disabled={submitting || !expType || !amount || !notes.trim() || !clientIdRef.trim()}
           className="w-full bg-[#1A3C8E] text-white rounded-xl py-4 text-[16px] font-bold disabled:opacity-50">
           {submitting ? 'Logging...' : 'Log Transaction'}
         </button>

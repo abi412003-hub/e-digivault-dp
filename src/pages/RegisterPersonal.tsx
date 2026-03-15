@@ -124,7 +124,16 @@ export default function RegisterPersonal() {
     }
   };
 
-  const isValid = form.full_name.trim().length > 0;
+  const isValid = 
+    form.full_name.trim().length > 0 &&
+    form.phone.trim().length >= 10 &&
+    form.email.trim().length > 0 &&
+    form.aadhaar.trim().replace(/\s/g, '').length === 12 &&
+    form.pan.trim().length === 10 &&
+    form.door_no.trim().length > 0 &&
+    form.district.trim().length > 0 &&
+    form.taluk.trim().length > 0 &&
+    form.pincode.trim().length === 6;
 
   return (
     <div className="min-h-svh bg-background px-6 pt-6 pb-10 flex flex-col">
